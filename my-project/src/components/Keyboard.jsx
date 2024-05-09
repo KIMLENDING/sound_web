@@ -2,132 +2,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Tone from 'tone';
 import gsap from 'gsap';
+import { keyMaps } from '../constants/KeyMaps';
 
 const Keyboard = () => {
-    const keyMap = {
-        key1: {
-            'a': 'C1',
-            'w': 'C#1',
-            's': 'D1',
-            'e': 'D#1',
-            'd': 'E1',
-            'f': 'F1',
-            't': 'F#1',
-            'j': 'G1',
-            'i': 'G#1',
-            'k': 'A1',
-            'o': 'A#1',
-            'l': 'B1',
-            ';': 'C2',
-        },
-        key2: {
-            'a': 'C2',
-            'w': 'C#2',
-            's': 'D2',
-            'e': 'D#2',
-            'd': 'E2',
-            'f': 'F2',
-            't': 'F#2',
-            'j': 'G2',
-            'i': 'G#2',
-            'k': 'A2',
-            'o': 'A#2',
-            'l': 'B2',
-            ';': 'C3',
-        },
-        key3: {
-            'a': 'C3',
-            'w': 'C#3',
-            's': 'D3',
-            'e': 'D#3',
-            'd': 'E3',
-            'f': 'F3',
-            't': 'F#3',
-            'j': 'G3',
-            'i': 'G#3',
-            'k': 'A3',
-            'o': 'A#3',
-            'l': 'B3',
-            ';': 'C3',
-        },
-
-        key4: {
-            'a': 'C4',
-            'w': 'C#4',
-            's': 'D4',
-            'e': 'D#4',
-            'd': 'E4',
-            'f': 'F4',
-            't': 'F#4',
-            'j': 'G4',
-            'i': 'G#4',
-            'k': 'A4',
-            'o': 'A#4',
-            'l': 'B4',
-            ';': 'C5',
-        },
-        key5: {
-            'a': 'C5',
-            'w': 'C#5',
-            's': 'D5',
-            'e': 'D#5',
-            'd': 'E5',
-            'f': 'F5',
-            't': 'F#5',
-            'j': 'G5',
-            'i': 'G#5',
-            'k': 'A5',
-            'o': 'A#5',
-            'l': 'B5',
-            ';': 'C6',
-        },
-        key6: {
-            'a': 'C6',
-            'w': 'C#6',
-            's': 'D6',
-            'e': 'D#6',
-            'd': 'E6',
-            'f': 'F6',
-            't': 'F#6',
-            'j': 'G6',
-            'i': 'G#6',
-            'k': 'A6',
-            'o': 'A#6',
-            'l': 'B6',
-            ';': 'C7',
-        },
-        key7: {
-            'a': 'C7',
-            'w': 'C#7',
-            's': 'D7',
-            'e': 'D#7',
-            'd': 'E7',
-            'f': 'F7',
-            't': 'F#7',
-            'j': 'G7',
-            'i': 'G#7',
-            'k': 'A7',
-            'o': 'A#7',
-            'l': 'B7',
-            ';': 'C8',
-        },
-        key8: {
-            'a': 'C8',
-            'w': 'C#8',
-            's': 'D8',
-            'e': 'D#8',
-            'd': 'E8',
-            'f': 'F8',
-            't': 'F#8',
-            'j': 'G8',
-            'i': 'G#8',
-            'k': 'A8',
-            'o': 'A#8',
-            'l': 'B8',
-            ';': 'C9',
-        },
-
-    };
+    const keyMap = keyMaps;
     const keyMap2 = [keyMap.key1, keyMap.key2, keyMap.key3, keyMap.key4, keyMap.key5, keyMap.key6, keyMap.key7, keyMap.key8];
 
     const synth = new Tone.PolySynth({
@@ -138,30 +16,62 @@ const Keyboard = () => {
             sustain: 0.8, // 음이 지속되는 시간
             release: 0.3 /// 음이 사라지는 시간
         },
-        maxPolyphony: 8 // 동시에 연주할 수 있는 음의 개수
+        maxPolyphony: 30 // 동시에 연주할 수 있는 음의 개수
 
     }).toDestination(); // 여러 음을 동시에 연주할 수 있는 PolySynth 객체 생성
 
-
-    const pressedTimeRef = useRef({});
-    const [keyLevel, setKeyLevel] = useState(4);
-
+    const pressedTimeRef = useRef({}); // 키를 누르고 뗀 시간을 기록하는 객체
+    const [keyLevel, setKeyLevel] = useState(4); // 톤을 조절하는 변수 (0~7)
+    const [detuneLevel, setDetuneLevel] = useState(-1200); // 톤을 조절하는 변수 (0~7)
 
     const animateKeyPress = (element) => {
         gsap.to(element, { scale: 1.5, background: 'red' });
     };
-
     const animateKeyRelease = (element) => {
-        gsap.to(element, { scale: 1, background: '#2997ff' });
+        if (!element) return;
+        switch (element.id) {
+            case 'w':
+            case 'e':
+            case 't':
+            case 'i':
+            case 'o': {
+                gsap.to(element, { scale: 1, background: '#000' });
+                break;
+            }
+            default:
+                gsap.to(element, { scale: 1, background: '#fff' });
+        }
     };
+
+    const DetuneChange = (event) => {
+        // 입력된 값을 숫자로 변환하여 상태를 업데이트합니다.
+        // 'e'이거 입력되는거 방지 아주 ㅈ같은거 이거 때문에 2시간 날렸다.
+
+        const value = Number(event.target.value); // 'e'가 입력되면 NaN이 반환됩니다.
+        console.log('value', value);
+
+
+        if (Number.isNaN(value)) return;  // 숫자가 아닌 경우 함수를 종료합니다.
+        if (value === 0) return;      // 0인 경우 함수를 종료합니다.
+        setDetuneLevel(parseInt(value));
+    };
+
+    useEffect(() => {
+        // detuneLevel이 변경될 때마다 호출됩니다.
+        if (!detuneLevel) {
+            return;
+        } else {
+            synth.set({ detune: detuneLevel });
+        }
+
+    }, [synth, detuneLevel]);
 
 
     useEffect(() => {
-        const plus = (e) => {
+
+        const plus = (e) => { // 톤을 올리는 함수
             const key = e.key.toLowerCase();
-
             if (key === 'r') {
-
                 if (Object.values(pressedTimeRef.current).length === 0) {
                     setKeyLevel(prevCount => prevCount === 7 ? 7 : prevCount + 1);
                 } else {
@@ -170,7 +80,7 @@ const Keyboard = () => {
             }
 
         };
-        const subtract = (e) => {
+        const subtract = (e) => {   // 톤을 내리는 함수
             const key = e.key.toLowerCase();
             if (key === 'q') {
                 if (Object.values(pressedTimeRef.current).length === 0) {
@@ -183,6 +93,7 @@ const Keyboard = () => {
 
         const handleKeyDown = (event) => {
             const key = event.key.toLowerCase();
+            console.log('key--------', key);
             const note = keyMap2[keyLevel][key];
             const element = document.getElementById(key);
             const now = Tone.now();
@@ -223,43 +134,57 @@ const Keyboard = () => {
             window.removeEventListener('keypress', plus);
             window.removeEventListener('keypress', subtract);
         };
-    }, [keyLevel]);
+    }, [synth, keyLevel]);
+    const hendle_Detune_Up = () => {
+        setDetuneLevel(prevCount => prevCount + 100);
+    };
+    const hendle_Detune_Down = () => {
+        setDetuneLevel(prevCount => prevCount - 100);
+    };
 
     return (
         <div className='common-padding'>
-            <div className='flex-center'>
+            <div className='flex-col flex-center  '>
                 <p className='hiw-text'>Press keys (A to :) to play sounds</p>
+                <p className='hiw-text'>Press keys (Q or R) down or up</p>
             </div>
-            <div className='flex-center py-5 '>
-                <div id='plus' className='hiw-bigtext px-5 mx-5'>-</div>
-                <div id='count' className='hiw-bigtext px-5 mx-5'>{keyLevel}</div>
-                <div id='sub' className='hiw-bigtext px-5 mx-5'>+</div>
+            <div className='w-full '>
+                <div className='flex-center py-5 '>
+                    <div id='plus' className='hiw-bigtext px-5 mx-5'>-</div>
+                    <div id='count' className='hiw-bigtext px-5 mx-5'>{keyLevel}</div>
+                    <div id='sub' className='hiw-bigtext px-5 mx-5'>+</div>
+                </div>
+                <div className='flex justify-end'>
+                    <div className='hiw-text'>detune: </div>
+                    <div className='text-black text-xl font-normal md:font-semibold bg-blue border-x-4 border-y-4 border-stone-800 w-20 flex items-center justify-end'
+                        onChange={DetuneChange}
+                    >{detuneLevel}</div>
+                    <div>
+                        <div id='detuneDown' className='hiw-text cursor-pointer flex-center' onClick={hendle_Detune_Up}>+</div>
+                        <div id='detuneUp' className='hiw-text cursor-pointer flex-center' onClick={hendle_Detune_Down}>-</div>
+                    </div>
+
+                </div>
             </div>
 
-            <div className='px-10'>
-                <div className='hiw-text-container'>
-                    <div className='hiw-text-container my-12 ml-16 px-4'>
-                        <p id='w' className='hiw-bigtext bg-size ml-10 px-10 py-10 bg-blue'>W</p>
-                        <p id='e' className='hiw-bigtext bg-size ml-10 px-10 py-10 bg-blue'>E</p>
-                    </div>
-                    <div className='hiw-text-container my-12 mr-16 px-4'>
-                        <p id='t' className='hiw-bigtext bg-size mr-10 px-10 py-10 bg-blue'>T</p>
-                        <p id='i' className='hiw-bigtext bg-size mr-10 px-10 py-10 bg-blue'>I</p>
-                        <p id='o' className='hiw-bigtext bg-size mr-10 px-10 py-10 bg-blue'>O</p>
-                    </div>
-                </div>
-                <div className='hiw-text-container my-10'>
-                    <p id='a' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>A</p>
-                    <p id='s' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>S</p>
-                    <p id='d' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>D</p>
-                    <p id='f' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>F</p>
-                    <p id='j' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>J</p>
-                    <p id='k' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>K</p>
-                    <p id='l' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>L</p>
-                    <p id=';' className='hiw-bigtext  bg-size mr-10 px-10 py-10 bg-blue'>:</p>
+            <div className='w-full  flex-center items-center justify-center'>
+                <div className='flex relative'>
+                    <p id='a' className='z-1 piano-white'>A</p>
+                    <p id='s' className='z-1 piano-white'>S</p>
+                    <p id='d' className='z-1 piano-white'>D</p>
+                    <p id='f' className='z-1 piano-white'>F</p>
+                    <p id='j' className='z-1 piano-white'>J</p>
+                    <p id='k' className='z-1 piano-white'>K</p>
+                    <p id='l' className='z-1 piano-white'>L</p>
+                    <p id=';' className='z-1 piano-white'>:</p>
+                    <p id='w' className='piano-black' style={{ marginLeft: '66px' }} >W</p>
+                    <p id='e' className='piano-black' style={{ marginLeft: '166px' }}>E</p>
+                    <p id='t' className='piano-black' style={{ marginLeft: '366px' }}>T</p>
+                    <p id='i' className='piano-black ' style={{ marginLeft: '466px' }}>I</p>
+                    <p id='o' className='piano-black ' style={{ marginLeft: '566px' }}>O</p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
