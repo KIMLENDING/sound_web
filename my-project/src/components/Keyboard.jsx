@@ -9,12 +9,27 @@ const Keyboard = () => {
     const keyMap2 = [keyMap.key1, keyMap.key2, keyMap.key3, keyMap.key4, keyMap.key5, keyMap.key6, keyMap.key7, keyMap.key8];
 
     const synth = new Tone.PolySynth({
-        oscillator: { type: 'amsawtooth' },
+        volume: 2.999999999999996,
+        detune: 1200,
+        portamento: 0,
+        oscillator: {
+            partialCount: 0,
+            partials: [],
+            phase: 0,
+            type: 'triangle'
+        },
         envelope: {
-            attack: 0.4, // 음이 발생하는 시간
-            decay: 0.1, // 음이 사라지는 시간
-            sustain: 0.8, // 음이 지속되는 시간
-            release: 0.3 /// 음이 사라지는 시간
+            // attack: 0.4, // 음이 발생하는 시간
+            // decay: 0.1, // 음이 사라지는 시간
+            // sustain: 0.8, // 음이 지속되는 시간
+            // release: 0.3 /// 음이 사라지는 시간
+            attack: 0.032,
+            attackCurve: "linear",
+            decay: 0.1,
+            decayCurve: "exponential",
+            release: 1,
+            releaseCurve: "exponential",
+            sustain: 0.3
         },
         maxPolyphony: 30 // 동시에 연주할 수 있는 음의 개수
 
